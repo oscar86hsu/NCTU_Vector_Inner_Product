@@ -1,3 +1,4 @@
+`include "Inner_Prod.v"
 `timescale 1ns/1ps
 module Inner_Prod_tb;
 
@@ -16,7 +17,7 @@ wire [18:0] C_out;
 // other
 reg [18:0] correct_data;
 reg error_occur;
-integer i;
+integer i, j, k;
 reg [7:0] A_seq [0:7];
 reg [7:0] B_seq [0:7];
 // Instantiate the Unit Under Test (UUT)
@@ -42,6 +43,7 @@ initial begin
     //            valid_in, A_input, B_input, valid_out, C_out);
 
     // Initialize the input signals
+    
 
     error_occur = 0;
     A_input = 0;
@@ -62,33 +64,34 @@ initial begin
     end
     @(negedge clk);
 
-    testcase_generate;
+    for(k=0; k<10; k=k+1) begin
 
-    valid_in = 1;
-    for (i = 0 ; i < 8 ; i = i + 1) begin
-        A_input = A_seq[i];
-        B_input = B_seq[i];
-        @(negedge clk); //input before posedge event
-    end
-    valid_in = 0;
-    A_input = 0;
-    B_input = 0;
-    @(negedge clk);//It should take only one clock cycle to compute the inner-product and send the result to port C.
-                   //Please write some testing code for this error case;
+        testcase_generate;
 
-    if (C_out !== correct_data && valid_out === 1) begin
-        $display("Error:result failed");
+        valid_in = 1;
+        for (i = 0 ; i < 8 ; i = i + 1) begin
+            A_input = A_seq[i];
+            B_input = B_seq[i];
+            @(negedge clk); //input before posedge event
+        end
+        valid_in = 0;
+        A_input = 0;
+        B_input = 0;
+        @(negedge clk);//It should take only one clock cycle to compute the inner-product and send the result to port C.
+                    //Please write some testing code for this error case;
         $display("Correct = %d , C = %d",correct_data,C_out);
-        error_occur = 1;
-    end
+        if (C_out !== correct_data && valid_out === 1) begin
+            $display("Error:result failed");
+            error_occur = 1;
+        end
 
-    @(negedge clk);//Raising the valid_out signal by "only" one clock cycle
-                   //Please write some testing code for this error case;
-
-    if (error_occur === 0) begin
-        $display("\033[0;32m=========================");
-        $display("Congratulations!!!");
-        $display("=========================\33[m");
+        @(negedge clk);//Raising the valid_out signal by "only" one clock cycle
+                    //Please write some testing code for this error case;
+        if (error_occur === 0) begin
+            $display("=========================");
+            $display("Congratulations!!!");
+            $display("=========================");
+        end
     end
     $finish;
 end
@@ -98,31 +101,35 @@ end
 task testcase_generate; begin
     // You can try to use $random and for-loop to replace this section.
 
-    A_seq[0] = 8'h01;
-    B_seq[0] = 8'h3D;
+    A_seq[0] = {$random} %256;
+    B_seq[0] = {$random} %256;
 
-    A_seq[1] = 8'hB2;
-    B_seq[1] = 8'h15;
+    A_seq[1] = {$random} %256;
+    B_seq[1] = {$random} %256;
 
-    A_seq[2] = 8'h31;
-    B_seq[2] = 8'h99;
+    A_seq[2] = {$random} %256;
+    B_seq[2] = {$random} %256;
 
-    A_seq[3] = 8'h15;
-    B_seq[3] = 8'hA6;
+    A_seq[3] = {$random} %256;
+    B_seq[3] = {$random} %256;
 
-    A_seq[4] = 8'hE3;
-    B_seq[4] = 8'h72;
+    A_seq[4] = {$random} %256;
+    B_seq[4] = {$random} %256;
 
-    A_seq[5] = 8'hD0;
-    B_seq[5] = 8'h5B;
+    A_seq[5] = {$random} %256;
+    B_seq[5] = {$random} %256;
 
-    A_seq[6] = 8'hFF;
-    B_seq[6] = 8'h4E;
+    A_seq[6] = {$random} %256;
+    B_seq[6] = {$random} %256;
 
-    A_seq[7] = 8'hCB;
-    B_seq[7] = 8'h53;
+    A_seq[7] = {$random} %256;
+    B_seq[7] = {$random} %256;
 
-    correct_data = 19'h17847;
+    correct_data = 19'b0;
+
+    for(j=0; j<8; j=j+1) begin
+        correct_data = A_seq[j] * B_seq[j] + correct_data;
+    end
 end endtask
 endmodule
 
